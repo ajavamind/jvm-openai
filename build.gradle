@@ -33,7 +33,7 @@ java {
     withSourcesJar()
 }
 
-def jacksonVersion = "2.18.0"
+def jacksonVersion = "2.19.0"
 def junitVersion = "5.11.1"
 
 dependencies {
@@ -135,5 +135,81 @@ sonar {
         property "sonar.projectKey", "StefanBratanov_jvm-openai"
         property "sonar.organization", "stefanbratanov"
         property "sonar.host.url", "https://sonarcloud.io"
+    }
+}
+
+task example(type: JavaExec) {
+    group = "application"
+    description = "Builds and runs the example Java file(s) in the examples folder."
+    // Set the directory containing example sources
+    def examplesDir = file("$projectDir/examples/src/main/java/examples")
+    def outputDir = file("$buildDir/examples-classes")
+    def mainJar = file("$buildDir/libs/${project.name}-${project.version}.jar")
+    // Compile the main project first (so the jar exists)
+    dependsOn jar
+    // Compile the example sources
+    //classpath: mainJar.exists() ? mainJar.absolutePath : sourceSets.main.runtimeClasspath.asPath
+    doFirst {
+        ant.mkdir(dir: outputDir)
+        ant.javac(
+            srcdir: examplesDir,
+            destdir: outputDir,
+            includeantruntime: false,
+            source: '17',
+            target: '17',
+			classpath: sourceSets.main.runtimeClasspath.asPath
+        )
+    }
+	
+    // Set the main class to run
+    mainClass.set('examples.ExampleChatClient') // <-- Change to your main class name
+    // Set the classpath to include compiled examples and main project classes
+	classpath = files(outputDir, mainJar) + files(sourceSets.main.runtimeClasspath)
+    // Optional, pass arguments to your example main class
+    // args = ['arg1', 'arg2']
+}
+
+task allexamples {
+    group = "application"
+    description = "Builds and runs all example Java files in the examples folder."
+    def examplesDir = file("$projectDir/examples/src/main/java")
+    def outputDir = file("$buildDir/examples-classes")
+    def mainJar = file("$buildDir/libs/${project.name}-${project.version}.jar")
+    dependsOn jar
+    doFirst {
+        ant.mkdir(dir: outputDir)
+        ant.javac(
+            srcdir: examplesDir,
+            destdir: outputDir,
+            includeantruntime: false,
+            source: '17',
+            target: '17',
+            classpath: sourceSets.main.runtimeClasspath.asPath
+        )
+    }
+    doLast {
+        // Find all .java files in the examplesDir
+        def javaFiles = fileTree(examplesDir) {
+            include '**/*.java'
+        }
+        // For each .java file, check if it contains a main method
+        javaFiles.each { file ->
+            def text = file.text
+			//println "working $text"
+            if (text =~ /public\s+static\s+void\s+main\s*\(\s*String(\s*\[\s*\]|\s*\.\.\.)\s*\w*\s*\)/) {
+			    println "Found main method in $file"
+                // Derive the fully qualified class name
+                def relPath = file.absolutePath - examplesDir.absolutePath + ''
+                relPath = relPath.replace(File.separator, '/')
+                if (relPath.startsWith('/')) relPath = relPath.substring(1)
+                def className = relPath.replace('.java', '').replace('/', '.')
+                // Run the class
+                println "\n--- Running example: ${className} ---"
+                javaexec {
+                    mainClass.set(className)
+                    classpath = files(outputDir) + files(sourceSets.main.runtimeClasspath)
+                }
+            } else println "nothing found"
+        }
     }
 }

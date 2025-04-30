@@ -9,8 +9,9 @@ public record EditImageRequest(
     Optional<Path> mask,
     Optional<String> model,
     Optional<Integer> n,
-    Optional<String> size,
+    Optional<String> quality,
     Optional<String> responseFormat,
+    Optional<String> size,
     Optional<String> user) {
 
   public static Builder newBuilder() {
@@ -24,8 +25,9 @@ public record EditImageRequest(
     private Optional<Path> mask = Optional.empty();
     private Optional<String> model = Optional.empty();
     private Optional<Integer> n = Optional.empty();
-    private Optional<String> size = Optional.empty();
+    private Optional<String> quality = Optional.empty();
     private Optional<String> responseFormat = Optional.empty();
+    private Optional<String> size = Optional.empty();
     private Optional<String> user = Optional.empty();
 
     /**
@@ -38,8 +40,17 @@ public record EditImageRequest(
     }
 
     /**
+     * @param image The image array to edit. Must be a valid PNG file, less than 4MB, and square. If mask
+     *     is not provided, image must have transparency, which will be used as the mask.
+     */
+    //public Builder image(Path[] image) {  
+    //  this.image = image;
+    //  return this;
+    //}
+
+    /**
      * @param prompt A text description of the desired image(s). The maximum length is 1000
-     *     characters.
+     *     characters for dall-e-2. 32000 characters for gpt-image-1.
      */
     public Builder prompt(String prompt) {
       this.prompt = prompt;
@@ -80,6 +91,14 @@ public record EditImageRequest(
       this.n = Optional.of(n);
       return this;
     }
+	
+	/**
+     * @param quality The quality of the image generated.
+     */
+    public Builder quality(String quality) {
+      this.quality = Optional.of(quality);
+      return this;
+    }
 
     /**
      * @param size The size of the generated images. Must be one of 256x256, 512x512, or 1024x1024.
@@ -108,7 +127,7 @@ public record EditImageRequest(
     }
 
     public EditImageRequest build() {
-      return new EditImageRequest(image, prompt, mask, model, n, size, responseFormat, user);
+      return new EditImageRequest(image, prompt, mask, model, n, quality, size, responseFormat, user);
     }
   }
 }
