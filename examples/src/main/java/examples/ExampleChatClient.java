@@ -8,7 +8,7 @@ import io.github.stefanbratanov.jvm.openai.OpenAI;
 
 public class ExampleChatClient {
 	
-	public static void main(String... args) {
+  public static void main(String... args) {
     Duration TIMEOUT = Duration.ofSeconds(20);
     String token = System.getenv("OPENAI_API_KEY");
 

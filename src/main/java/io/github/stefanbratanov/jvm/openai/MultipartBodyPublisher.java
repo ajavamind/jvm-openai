@@ -106,7 +106,40 @@ class MultipartBodyPublisher implements HttpRequest.BodyPublisher {
       }
       return this;
     }
-
+	
+	// Accepts a List of Path objects and adds each as a separate file part
+    Builder filePart(String key, List<Path> values) {
+    // If more than one file, use array syntax for the key
+    String paramName = values.size() > 1 && !key.endsWith("[]") ? key + "[]" : key;
+      try {
+        for (Path value : values) {
+        String mimeType = Files.probeContentType(value);
+        byte[] fileBytes = Files.readAllBytes(value);
+        multipartBodyParts.add(
+          (separator
+                  + "\""
+                  + paramName
+                  + "\"; filename=\""
+                  + value.getFileName()
+                  + "\""
+                  + CRLF
+                  + "Content-Type: "
+                  + mimeType
+                  + CRLF
+                  + "Content-Length: "
+                  + fileBytes.length
+                  + CRLF
+                  + CRLF)
+              .getBytes());
+           multipartBodyParts.add(fileBytes);
+           multipartBodyParts.add(CRLF.getBytes());
+        } 
+      } catch (IOException ex) {
+        throw new UncheckedIOException(ex);
+      }
+      return this;
+    }
+	
     MultipartBodyPublisher build() {
       multipartBodyParts.add(("--" + boundary + "--").getBytes());
       return new MultipartBodyPublisher(boundary, multipartBodyParts);

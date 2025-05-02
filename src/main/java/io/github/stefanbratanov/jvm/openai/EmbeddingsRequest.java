@@ -27,7 +27,7 @@ public record EmbeddingsRequest(
      * @param input The string(s) that will be turned into an embedding.
      */
     public Builder input(String... input) {
-      this.input = Arrays.asList((Object[])input);
+      this.input = Arrays.asList((Object[]) input);
       return this;
     }
 

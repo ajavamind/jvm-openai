@@ -94,14 +94,13 @@ public record CreateImageRequest(
     }
 
     /**
-     * @param outputFormat The format in which the generated images are returned. 
-	 * This parameter is only supported for gpt-image-1. Must be one of png, jpeg, or webp.
+     * @param outputFormat The format in which the generated images are returned. This parameter is
+     *     only supported for gpt-image-1. Must be one of png, jpeg, or webp.
      */
     public Builder outputFormat(String outputFormat) {
       this.outputFormat = Optional.of(outputFormat);
       return this;
     }
-
 
     /**
      * @param quality The quality of the image that will be generated. hd creates images with finer
@@ -152,7 +151,19 @@ public record CreateImageRequest(
     }
 
     public CreateImageRequest build() {
-      return new CreateImageRequest(prompt, background, model, moderation, n, outputCompression, outputFormat, quality, responseFormat, size, style, user);
+      return new CreateImageRequest(
+          prompt,
+          background,
+          model,
+          moderation,
+          n,
+          outputCompression,
+          outputFormat,
+          quality,
+          responseFormat,
+          size,
+          style,
+          user);
     }
   }
 }
